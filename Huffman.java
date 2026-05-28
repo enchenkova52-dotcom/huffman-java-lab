@@ -1,6 +1,7 @@
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
+import java.nio.charset.StandardCharsets;
 
 public class Huffman {
     private static final byte[] MAGIC = {'H', 'U', 'F', '1'};
@@ -229,13 +230,79 @@ public class Huffman {
         }
     }
 
-    private static void printUsage() {
-        System.out.println("Использование:");
-        System.out.println("  java Huffman encode <inputFile> <outputFile>");
-        System.out.println("  java Huffman decode <inputFile> <outputFile>");
+    private static void runTests() throws IOException {
+    System.out.println("=== Тест 1: 10 одинаковых символов ===");
+
+    Files.write(
+        Paths.get("same10.txt"),
+        "1111111111".getBytes(StandardCharsets.US_ASCII)
+    );
+
+    encode("same10.txt", "same10.huf");
+    decode("same10.huf", "same10_decoded.txt");
+
+    if (Arrays.equals(
+            Files.readAllBytes(Paths.get("same10.txt")),
+            Files.readAllBytes(Paths.get("same10_decoded.txt"))
+    )) {
+        System.out.println("Тест 1 пройден: файлы совпадают");
+    } else {
+        System.out.println("Тест 1 не пройден: файлы отличаются");
     }
 
-    public static void main(String[] args) {
+    System.out.println();
+    System.out.println("=== Тест 2: 20 байт, 3 символа ===");
+
+    Files.write(
+        Paths.get("three20.txt"),
+        "11111111112222233333".getBytes(StandardCharsets.US_ASCII)
+    );
+
+    encode("three20.txt", "three20.huf");
+    decode("three20.huf", "three20_decoded.txt");
+
+    if (Arrays.equals(
+            Files.readAllBytes(Paths.get("three20.txt")),
+            Files.readAllBytes(Paths.get("three20_decoded.txt"))
+    )) {
+        System.out.println("Тест 2 пройден: файлы совпадают");
+    } else {
+        System.out.println("Тест 2 не пройден: файлы отличаются");
+    }
+
+    System.out.println();
+    System.out.println("=== Тест 3: бинарный class-файл ===");
+
+    encode("Huffman.class", "HuffmanClass.huf");
+    decode("HuffmanClass.huf", "HuffmanClass_decoded.class");
+
+    if (Arrays.equals(
+            Files.readAllBytes(Paths.get("Huffman.class")),
+            Files.readAllBytes(Paths.get("HuffmanClass_decoded.class"))
+    )) {
+        System.out.println("Тест 3 пройден: бинарные файлы совпадают");
+    } else {
+        System.out.println("Тест 3 не пройден: бинарные файлы отличаются");
+    }
+
+    System.out.println();
+    System.out.println("=== Все тесты завершены ===");
+}
+
+    private static void printUsage() {
+    System.out.println("Использование:");
+    System.out.println("  java Huffman encode <inputFile> <outputFile>");
+    System.out.println("  java Huffman decode <inputFile> <outputFile>");
+    System.out.println("  java Huffman test");
+}
+
+   public static void main(String[] args) {
+    try {
+        if (args.length == 1 && args[0].equalsIgnoreCase("test")) {
+            runTests();
+            return;
+        }
+
         if (args.length != 3) {
             printUsage();
             return;
@@ -245,21 +312,20 @@ public class Huffman {
         String inputFile = args[1];
         String outputFile = args[2];
 
-        try {
-            if (mode.equalsIgnoreCase("encode")) {
-                encode(inputFile, outputFile);
-                System.out.println("Файл закодирован: " + outputFile);
-            }
-            else if (mode.equalsIgnoreCase("decode")) {
-                decode(inputFile, outputFile);
-                System.out.println("Файл декодирован: " + outputFile);
-            }
-            else {
-                printUsage();
-            }
+        if (mode.equalsIgnoreCase("encode")) {
+            encode(inputFile, outputFile);
+            System.out.println("Файл закодирован: " + outputFile);
         }
-        catch (IOException e) {
-            System.err.println("Ошибка: " + e.getMessage());
+        else if (mode.equalsIgnoreCase("decode")) {
+            decode(inputFile, outputFile);
+            System.out.println("Файл декодирован: " + outputFile);
+        }
+        else {
+            printUsage();
         }
     }
+    catch (IOException e) {
+        System.err.println("Ошибка: " + e.getMessage());
+    }
+}
 }
